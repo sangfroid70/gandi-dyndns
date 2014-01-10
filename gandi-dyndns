@@ -70,7 +70,7 @@ def main():
     addresses = {}
 
     if check_if_ttl_is_correct (ttl) == False:
-        print >> sys.stderr, ("Le TTL de " + ttl  + " est trop court (minimum 300). Il a été ramené automatiquement à 300")
+        print >> sys.stderr, ("Le TTL de " + str(ttl)  + " est trop court (minimum 300). Il a été ramené automatiquement à 300")
         usage()
 
     for rtype in rtypes:
