@@ -5,6 +5,7 @@ import xmlrpclib
 import getopt
 import sys
 import urllib2
+from xml.dom import minidom
 
 api = xmlrpclib.ServerProxy('https://rpc.gandi.net/xmlrpc/')
 
@@ -130,11 +131,17 @@ def domain_info(apikey, domain):
 def get_zoneid_by_domain(apikey, domain):
     return domain_info(apikey, domain)['zone_id']
 
-def get_public_ipv4():
-    try:
-        return urllib2.urlopen('http://api.externalip.net/ip/').read()
-    except:
-        return None
+ def get_public_ipv4():
+	connect = urllib2.urlopen("http://192.168.1.1/api/?method=ppp.getInfo")
+	data = connect.read()
+	connect.close()
+	doc = minidom.parseString(data)
+	element = doc.documentElement.childNodes[1]
+	try:
+		ip = element.getAttribute ('ip_addr')
+	except:
+		ip = None
+	return ip
 
 def get_public_ipv6():
     data = urllib2.urlopen("http://icanhazipv6.com").read()
