@@ -13,7 +13,7 @@ def main():
     apikey = ''
     domain = ''
     record = ''
-	ttl = 0
+    ttl = 0
     rtypes = []
     quiet=False
 	
@@ -25,7 +25,7 @@ def main():
     optp.add_option('-4', '--ipv4',   help='Enable IPv4', action='store_true')
     optp.add_option('-6', '--ipv6',   help='Enable IPv6', action='store_true')
     optp.add_option('-r', '--record', help='Specify record data')
-	optp.add_action('-t', '--ttl',    help='Specify Time To Live (default = 300)')
+    optp.add_action('-t', '--ttl',    help='Specify Time To Live (default = 300)')
     optp.add_option('--extip4', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
     optp.add_option('--extip6', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
     optp.add_option('-q', '--quiet',    help='No output except to stderr on error', action='store_true')
@@ -39,7 +39,7 @@ def main():
     record = opts.record    
     extip4 = opts.extip4
     extip6 = opts.extip6
-	ttl    = opts.ttl
+    ttl    = opts.ttl
     if opts.quiet: quiet=True
     
     if apikey == None or apikey == '':
@@ -70,8 +70,8 @@ def main():
     addresses = {}
 
     if check_if_ttl_is_correct (ttl) == False:
-         print >> sys.stderr, ("Le TTL de " + ttl  + " est trop court (minimum 300). Il a été ramené automatiquement à 300")
-		 usage()
+    	print >> sys.stderr, ("Le TTL de " + ttl  + " est trop court (minimum 300). Il a été ramené automatiquement à 300")
+        usage()
 
 
     for rtype in rtypes:
@@ -178,10 +178,10 @@ def insert_record(apikey, zone_id, zone_version, record, rtype, value):
     api.domain.zone.record.add(apikey, zone_id, zone_version, zoneRecord)
 
 def check_if_ttl_is_correct(ttl):
-	if ttl < 300:
-		ttl = 300
-		return False
-	return True
+    if ttl < 300:
+        ttl = 300
+        return False
+    return True
 
 def check_if_domain_exists(apikey, domain):
     try:
