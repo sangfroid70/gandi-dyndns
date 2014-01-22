@@ -17,18 +17,20 @@ def main():
     ttl = 0
     rtypes = []
     quiet=False
+    printChange=False
 
     from optparse import OptionParser
     optp = OptionParser()
-    optp.add_option('-a', '--api',    help='Specify API key')
-    optp.add_option('-d', '--domain', help='Specify domain')
-    optp.add_option('-4', '--ipv4',   help='Enable IPv4', action='store_true')
-    optp.add_option('-6', '--ipv6',   help='Enable IPv6', action='store_true')
-    optp.add_option('-r', '--record', help='Specify record data')
-    optp.add_option('-t', '--ttl',    help='Specify Time To Live (default = 300)')
-    optp.add_option('--extip4', help='Force external IPv4. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-    optp.add_option('--extip6', help='Force external IPv6. This can be used to update a record with an IP different than the IP of the server/workstation from which the script is executed')
-    optp.add_option('-q', '--quiet',    help='No output except to stderr on error', action='store_true')
+    optp.add_option('-a', '--api',    help='Specifier clé API')
+    optp.add_option('-d', '--domain', help='Spécifier domaine')
+    optp.add_option('-4', '--ipv4',   help='Activer IPv4', action='store_true')
+    optp.add_option('-6', '--ipv6',   help='Activer IPv6', action='store_true')
+    optp.add_option('-r', '--record', help='Spécifier un enregistrement')
+    optp.add_option('-t', '--ttl',    help='Spécifier un temps de vie (defaut = 300)')
+    optp.add_option('--extip4', help='Force une adresse IPv4 externe. Cela peut-être utilisé pour mettre à jour un enregistrement avec une autre IP que celle du serveur ou de la station qui exécute ce script')
+    optp.add_option('--extip6', help='Force une adresse IPv4 externe. Cela peut-être utilisé pour mettre à jour un enregistrement avec une autre IP que celle du serveur ou de la station qui exécute ce script')
+    optp.add_option('-q', '--quiet',    help='Pas de sortie excepté la sortie Erreur', action='store_true')
+    optp.add_option('-p', '--printChange', help='Sortie standard pour un changement d\'IP', action='store_true')
     (opts, args) = optp.parse_args()
    
     # Process
@@ -41,15 +43,16 @@ def main():
     extip6 = opts.extip6
     ttl    = opts.ttl
     if opts.quiet: quiet=True
+    if opts.printChange: prinChange=True
     
     if apikey == None or apikey == '':
-        print >> sys.stderr, ("No Apikey specified")
+        print >> sys.stderr, ("Pas de clé API spécifiée")
         usage()
         sys.exit(79)
         
     #This call will always return true. cf comment regarding check_if_apikey_exists    
     if check_if_apikey_exists(apikey) == False:
-        print >> sys.stderr, ("Apikey " + apikey + " does not exist or is malformed")
+        print >> sys.stderr, ("La clé API " + apikey + " n'existe pas ou est mal retranscrite")
         usage()
         sys.exit(80)
         
@@ -59,7 +62,7 @@ def main():
         sys.exit(81)
         
     if check_if_domain_exists(apikey, domain) == False:
-        print >> sys.stderr, ("Domain " + domain + " does not exist")
+        print >> sys.stderr, ("Le domaine " + domain + " n'existe pas")
         usage()
         sys.exit(82)
     
@@ -75,7 +78,7 @@ def main():
 
     for rtype in rtypes:
         if check_if_record_exists(apikey, get_zoneid_by_domain(apikey, domain), record, rtype) == False:
-            print >> sys.stderr, (rtype + " Record " + record + " does not exist, please create")
+            print >> sys.stderr, (rtype + " Record " + record + " n'existe pas, créez le avant.")
             usage()
             sys.exit(83)
 
@@ -90,7 +93,7 @@ def main():
             else :
                 address = get_public_ipv6()
         if not address:
-            print >> sys.stderr,  ("Can't find address for record type '" + rtype + "'")
+            print >> sys.stderr,  ("Aucune adresse pour le type d'enregistrement '" + rtype + "'")
             sys.exit(84)
         addresses[rtype] = address
         
@@ -102,7 +105,7 @@ def main():
         ip_changed = check_if_ip_changed(apikey, zone_id, record, rtype, addresses[rtype])
         if not ip_changed:
             if not quiet:
-				print ("The IP for '" + record + "' did not change")
+				print ("L'IP pour '" + record + "' n'a pas changé.")
             sys.exit(0) 
     
     # Create a new zone version for zone id
@@ -111,7 +114,7 @@ def main():
     for rtype in rtypes:
         # Update the record for the zone id and zone version
         update_record(apikey, zone_id, version_id, record, rtype, addresses[rtype])
-        if not quiet:
+        if not quiet or printChange:
 			print record + " " + rtype + " " + addresses[rtype]
 
     # Activate the new zone
