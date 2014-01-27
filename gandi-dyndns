@@ -42,9 +42,10 @@ def main():
     extip4 = opts.extip4
     extip6 = opts.extip6
     ttl    = opts.ttl
+    ttl    = int (ttl)
     if opts.quiet: quiet=True
     if opts.printChange:
-      prinChange = True
+      printChange = True
       quiet = True
     
     if apikey == None or apikey == '':
@@ -76,6 +77,7 @@ def main():
 
     if check_if_ttl_is_correct (ttl) == False:
         print >> sys.stderr, ("Le TTL de " + str(ttl)  + " est trop court (minimum 300). Il a été ramené automatiquement à 300")
+        ttl = 300
         usage()
 
     for rtype in rtypes:
@@ -115,7 +117,7 @@ def main():
     
     for rtype in rtypes:
         # Update the record for the zone id and zone version
-        update_record(apikey, zone_id, version_id, record, rtype, addresses[rtype])
+        update_record(apikey, zone_id, version_id, record, rtype, addresses[rtype] , ttl)
         if not quiet or printChange:
 			    print record + " " + rtype + " " + addresses[rtype]
 
@@ -123,7 +125,7 @@ def main():
     api.domain.zone.version.set(apikey, zone_id, version_id)
 
 def usage():
-    print("Usage: gandi-dyndns --api=<APIKEY> --domain=<DOMAIN> --record=<RECORD> [--ipv4] [--ipv6] [--quiet] [ttl=<TTL>]")
+    print("Usage: gandi-dyndns --api=<APIKEY> --domain=<DOMAIN> --record=<RECORD> [--ipv4] [--ipv6] [--quiet] [--printChange] [--ttl=<TTL>]")
     print("Example: gandi-dyndns --api=123ApIkEyFrOmGanDi --domain=example.com --record=www --ipv4")
 
 def api_version(apikey):
@@ -163,9 +165,9 @@ def get_public_ipv6():
       return matches.group(1)
     return None
 
-def update_record(apikey, zone_id, zone_version, record, rtype, value):
+def update_record(apikey, zone_id, zone_version, record, rtype, value , ttl):
     delete_record(apikey, zone_id, zone_version, record, rtype)
-    insert_record(apikey, zone_id, zone_version, record, rtype, value)    
+    insert_record(apikey, zone_id, zone_version, record, rtype, value, ttl)    
 
 def delete_record(apikey, zone_id, zone_version, record, rtype):
     recordListOptions = {"name": record,
@@ -173,7 +175,7 @@ def delete_record(apikey, zone_id, zone_version, record, rtype):
 
     records = api.domain.zone.record.delete(apikey, zone_id, zone_version, recordListOptions)
 
-def insert_record(apikey, zone_id, zone_version, record, rtype, value):
+def insert_record(apikey, zone_id, zone_version, record, rtype, value ,ttl):
     zoneRecord = {"name": record, 
                   "ttl": ttl, 
                   "type": rtype, 
@@ -183,7 +185,6 @@ def insert_record(apikey, zone_id, zone_version, record, rtype, value):
 
 def check_if_ttl_is_correct(ttl):
     if ttl < 300:
-        ttl = 300
         return False
     return True
 
